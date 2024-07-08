@@ -1,4 +1,6 @@
 class Card {
+    static flippedCardsCount = 0;
+
     constructor(name, img) {
         this.name = name;
         this.img = img;
@@ -10,31 +12,37 @@ class Card {
         const cardElement = document.createElement("div");
         cardElement.classList.add("cell");
         cardElement.innerHTML = `
-          <div class="card" data-name="${this.name}">
-              <div class="card-inner">
-                  <div class="card-front"></div>
-                  <div class="card-back">
-                      <img src="${this.img}" alt="${this.name}">
-                  </div>
-              </div>
-          </div>
-      `;
+            <div class="card" data-name="${this.name}">
+                <div class="card-inner">
+                    <div class="card-front"></div>
+                    <div class="card-back">
+                        <img src="${this.img}" alt="${this.name}">
+                    </div>
+                </div>
+            </div>
+        `;
         return cardElement;
     }
 
     #flip() {
         const cardElement = this.element.querySelector(".card");
         cardElement.classList.add("flipped");
+        this.isFlipped = true;
+        Card.flippedCardsCount++;
     }
 
     #unflip() {
         const cardElement = this.element.querySelector(".card");
         cardElement.classList.remove("flipped");
+        this.isFlipped = false;
+        Card.flippedCardsCount--;
     }
-    
+
     toggleFlip() {
         if (this.isFlipped) {
-            this.#unflip();
+            if (Card.flippedCardsCount > 1) {
+                this.#unflip();
+            }
         } else {
             this.#flip();
         }
@@ -74,9 +82,7 @@ class Board {
         this.#setGridColumns();
         this.gameBoardElement.innerHTML = "";
         this.cards.forEach((card) => {
-            card.element
-                .querySelector(".card")
-                .addEventListener("click", () => this.onCardClicked(card));
+            card.element.querySelector(".card").addEventListener("click", () => this.onCardClicked(card));
             this.gameBoardElement.appendChild(card.element);
         });
     }
@@ -113,9 +119,7 @@ class MemoryGame {
         this.matchedCards = [];
         if (flipDuration < 350 || isNaN(flipDuration) || flipDuration > 3000) {
             flipDuration = 350;
-            alert(
-                "La duración de la animación debe estar entre 350 y 3000 ms, se ha establecido a 350 ms"
-            );
+            alert("La duración de la animación debe estar entre 350 y 3000 ms, se ha establecido a 350 ms");
         }
         this.flipDuration = flipDuration;
         this.board.onCardClick = this.#handleCardClick.bind(this);
@@ -164,10 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
         { name: "Ruby", img: "./img/Ruby.svg" },
     ];
 
-    const cards = cardsData.flatMap((data) => [
-        new Card(data.name, data.img),
-        new Card(data.name, data.img),
-    ]);
+    const cards = cardsData.flatMap((data) => [new Card(data.name, data.img), new Card(data.name, data.img)]);
     const board = new Board(cards);
     const memoryGame = new MemoryGame(board, 1000);
 
